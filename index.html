@@ -361,98 +361,235 @@ function removeItem(id) {
 
 document.getElementById("checkoutForm")
 .addEventListener("submit", function(event) {
-  event.preventDefault();
 
-  if (cart.length === 0) {
-    alert("Please add products to your cart first.");
-    return;
-  }
+event.preventDefault();
 
-  const name = document.getElementById("customerName").value;
-  const payment = document.getElementById("payment").value;
+if (cart.length === 0) {
+alert("Please add products to your cart first.");
+return;
+}
 
-  document.getElementById("message").innerText =
-    "Demo order received for " + name +
-    ". Payment: " + payment +
-    ". No real payment or order processing is connected.";
+const name = document.getElementById("customerName").value;
+const mobile = document.getElementById("mobile").value;
+const address = document.getElementById("address").value;
+const payment = document.getElementById("payment").value;
 
-  cart = [];
-  updateCart();
-  this.reset();
+const total = cart.reduce((sum, item) => {
+return sum + Number(item.price) * (Number(item.quantity) || 1);
+}, 0);
+
+let orders = JSON.parse(
+localStorage.getItem("shopOrders") || "[]"
+);
+
+orders.push({
+name: name,
+mobile: mobile,
+address: address,
+payment: payment,
+total: total,
+date: new Date().toLocaleString()
 });
 
+localStorage.setItem("shopOrders", JSON.stringify(orders));
+
+document.getElementById("message").innerText =
+"Demo order received successfully!";
+
+cart = [];
+
+updateCart();
+
+this.reset();
+
+});
 showProducts();
 updateCart();
 </script>
 <!-- ShopEase Admin Dashboard -->
 
-<section id="adminPanel" style="padding:20px;background:#f1f5f9;margin:20px;border-radius:12px;font-family:Arial">
+<section id="adminPanel"
+style="padding:25px;background:#f1f5f9;">
 
-<h2 style="color:#172554">ShopEase Admin Dashboard</h2>
+<h2 style="color:#172554;">ShopEase Admin Dashboard</h2>
 
 <p>Welcome to ShopEase Admin Panel</p>
 
-<div style="display:flex;gap:10px;flex-wrap:wrap">
+<div style="display:flex;gap:12px;flex-wrap:wrap;">
 
-<div style="background:white;padding:15px;border-radius:10px">
+<div style="background:white;padding:20px;border-radius:10px;">
 <h3>Products</h3>
 <p id="productCount">0</p>
 </div>
 
-<div style="background:white;padding:15px;border-radius:10px">
+<div style="background:white;padding:20px;border-radius:10px;">
 <h3>Orders</h3>
-<p>Demo Mode</p>
+<p id="orderCount">0</p>
 </div>
 
-<div style="background:white;padding:15px;border-radius:10px">
-<h3>Sales</h3>
-<p>₹0</p>
+<div style="background:white;padding:20px;border-radius:10px;">
+<h3>Total Sales</h3>
+<p id="salesTotal">₹0</p>
 </div>
 
 </div>
+
+<hr>
 
 <h3>Add New Product</h3>
 
-<input id="newProductName" placeholder="Product Name"
-style="padding:12px;width:90%;margin:5px">
+<input id="newProductName"
+placeholder="Product Name"
+style="padding:12px;width:90%;margin:5px;">
 
-<input id="newProductPrice" type="number" placeholder="Price"
-style="padding:12px;width:90%;margin:5px">
+<input id="newProductPrice"
+type="number"
+placeholder="Price"
+style="padding:12px;width:90%;margin:5px;">
 
 <button onclick="addAdminProduct()"
-style="padding:12px;background:#172554;color:white;border:0;border-radius:6px">
+style="padding:12px;background:#172554;color:white;">
 Add Product
 </button>
 
 <p id="adminMessage"></p>
 
+<hr>
+
+<h3>All Products</h3>
+<div id="adminProductList"></div>
+
+<hr>
+
+<h3>Customer Orders</h3>
+<div id="adminOrderList"></div>
+
+<hr>
+
+<h3>Sales Report</h3>
+<div id="adminSalesReport"></div>
+
 </section>
 
 <script>
-function addAdminProduct() {
- const name = document.getElementById("newProductName").value;
- const price = document.getElementById("newProductPrice").value;
 
- if (!name || !price || Number(price) <= 0) {
-   alert("Please enter valid product details");
-   return;
- }
-
- let products = JSON.parse(localStorage.getItem("adminProducts") || "[]");
-
- products.push({name:name, price:Number(price)});
-
- localStorage.setItem("adminProducts", JSON.stringify(products));
-
- document.getElementById("productCount").innerText = products.length;
- document.getElementById("adminMessage").innerText = "Product saved successfully!";
-
- document.getElementById("newProductName").value = "";
- document.getElementById("newProductPrice").value = "";
+function getData(key) {
+return JSON.parse(localStorage.getItem(key) || "[]");
 }
 
-document.getElementById("productCount").innerText =
- JSON.parse(localStorage.getItem("adminProducts") || "[]").length;
+function addAdminProduct() {
+
+const name = document.getElementById("newProductName").value.trim();
+
+const price = Number(document.getElementById("newProductPrice").value);
+
+if (!name || price <= 0) {
+alert("Enter valid product details");
+return;
+}
+
+let products = getData("adminProducts");
+
+products.push({
+name: name,
+price: price
+});
+
+localStorage.setItem("adminProducts", JSON.stringify(products));
+
+document.getElementById("newProductName").value = "";
+document.getElementById("newProductPrice").value = "";
+
+document.getElementById("adminMessage").innerText =
+"Product saved successfully!";
+
+loadAdminDashboard();
+
+}
+
+function loadAdminDashboard() {
+
+let products = getData("adminProducts");
+let orders = getData("shopOrders");
+
+let sales = orders.reduce((sum, order) =>
+sum + Number(order.total || 0), 0);
+
+document.getElementById("productCount").innerText = products.length;
+
+document.getElementById("orderCount").innerText = orders.length;
+
+document.getElementById("salesTotal").innerText =
+"₹" + sales;
+
+let productHTML = "";
+
+products.forEach((product, index) => {
+
+productHTML += `
+<div style="background:white;padding:12px;margin:8px;border-radius:8px;">
+<b>${escapeHTML(product.name)}</b>
+<p>Price: ₹${Number(product.price)}</p>
+<button onclick="deleteAdminProduct(${index})">
+Delete
+</button>
+</div>`;
+
+});
+
+document.getElementById("adminProductList").innerHTML =
+productHTML || "No products added yet.";
+
+let orderHTML = "";
+
+orders.forEach(order => {
+
+orderHTML += `
+<div style="background:white;padding:12px;margin:8px;border-radius:8px;">
+<b>Customer: ${escapeHTML(order.name)}</b>
+<p>Mobile: ${escapeHTML(order.mobile)}</p>
+<p>Address: ${escapeHTML(order.address)}</p>
+<p>Payment: ${escapeHTML(order.payment)}</p>
+<p>Total: ₹${Number(order.total)}</p>
+</div>`;
+
+});
+
+document.getElementById("adminOrderList").innerHTML =
+orderHTML || "No orders received yet.";
+
+document.getElementById("adminSalesReport").innerHTML =
+"Total Orders: " + orders.length +
+"<br>Total Sales: ₹" + sales;
+
+}
+
+function escapeHTML(value) {
+return String(value).replace(/[&<>"']/g, function(char) {
+return {
+"&": "&amp;",
+"<": "&lt;",
+">": "&gt;",
+'"': "&quot;",
+"'": "&#39;"
+}[char];
+});
+}
+
+function deleteAdminProduct(index) {
+
+let products = getData("adminProducts");
+
+products.splice(index, 1);
+
+localStorage.setItem("adminProducts", JSON.stringify(products));
+
+loadAdminDashboard();
+
+}
+
+loadAdminDashboard();
+
 </script>
 </body>
       </html>
