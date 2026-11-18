@@ -217,8 +217,14 @@ footer {
 </footer>
 
 <script>
-const productsData = [
-  {
+  const SUPABASE_URL = "https://bqlasipavorgtxleorgr.supabase.co"
+const SUPABASE_KEY = "sb_publishable_9yXjW1PmogLeIwmUe2iygQ_zL2FskYg"
+
+const supabase = window.supabase.createClient( 
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+   const productsData = [ {
     id: 1,
     name: "Stylish T-Shirt",
     price: 499,
