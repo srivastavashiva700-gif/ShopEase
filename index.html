@@ -384,7 +384,76 @@ document.getElementById("checkoutForm")
 showProducts();
 updateCart();
 </script>
+<!-- ShopEase Admin Dashboard -->
 
+<section id="adminPanel" style="padding:20px;background:#f1f5f9;margin:20px;border-radius:12px;font-family:Arial">
+
+<h2 style="color:#172554">ShopEase Admin Dashboard</h2>
+
+<p>Welcome to ShopEase Admin Panel</p>
+
+<div style="display:flex;gap:10px;flex-wrap:wrap">
+
+<div style="background:white;padding:15px;border-radius:10px">
+<h3>Products</h3>
+<p id="productCount">0</p>
+</div>
+
+<div style="background:white;padding:15px;border-radius:10px">
+<h3>Orders</h3>
+<p>Demo Mode</p>
+</div>
+
+<div style="background:white;padding:15px;border-radius:10px">
+<h3>Sales</h3>
+<p>₹0</p>
+</div>
+
+</div>
+
+<h3>Add New Product</h3>
+
+<input id="newProductName" placeholder="Product Name"
+style="padding:12px;width:90%;margin:5px">
+
+<input id="newProductPrice" type="number" placeholder="Price"
+style="padding:12px;width:90%;margin:5px">
+
+<button onclick="addAdminProduct()"
+style="padding:12px;background:#172554;color:white;border:0;border-radius:6px">
+Add Product
+</button>
+
+<p id="adminMessage"></p>
+
+</section>
+
+<script>
+function addAdminProduct() {
+ const name = document.getElementById("newProductName").value;
+ const price = document.getElementById("newProductPrice").value;
+
+ if (!name || !price || Number(price) <= 0) {
+   alert("Please enter valid product details");
+   return;
+ }
+
+ let products = JSON.parse(localStorage.getItem("adminProducts") || "[]");
+
+ products.push({name:name, price:Number(price)});
+
+ localStorage.setItem("adminProducts", JSON.stringify(products));
+
+ document.getElementById("productCount").innerText = products.length;
+ document.getElementById("adminMessage").innerText = "Product saved successfully!";
+
+ document.getElementById("newProductName").value = "";
+ document.getElementById("newProductPrice").value = "";
+}
+
+document.getElementById("productCount").innerText =
+ JSON.parse(localStorage.getItem("adminProducts") || "[]").length;
+</script>
 </body>
       </html>
 
