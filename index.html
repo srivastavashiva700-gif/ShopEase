@@ -275,7 +275,12 @@ function showProducts() {
   const search = document.getElementById("search")
     .value.toLowerCase();
 
-  const filtered = productsData.filter(product => {
+  const allProducts = [
+  ...productsData,
+  ...JSON.parse(localStorage.getItem("adminProducts") || "[]")
+];
+
+const filtered = allProducts.filter(product => {
     const matchSearch =
       product.name.toLowerCase().includes(search);
 
